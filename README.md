@@ -1,4 +1,4 @@
-# Create a GitHub Action Using TypeScript
+# Create Robots.txt Action
 
 [![GitHub Super-Linter](https://github.com/actions/typescript-action/actions/workflows/linter.yml/badge.svg)](https://github.com/super-linter/super-linter)
 ![CI](https://github.com/actions/typescript-action/actions/workflows/ci.yml/badge.svg)
@@ -6,30 +6,17 @@
 [![CodeQL](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/actions/typescript-action/actions/workflows/codeql-analysis.yml)
 [![Coverage](./badges/coverage.svg)](./badges/coverage.svg)
 
-Use this template to bootstrap the creation of a TypeScript action. :rocket:
+An action to create a [robots.txt](https://en.wikipedia.org/wiki/Robots.txt) file from a variety of sources.
 
-This template includes compilation support, tests, a validation workflow,
-publishing, and versioning guidance.
+| Input name  | Example           | Description                                                                                                    |
+| ----------- | ----------------- | -------------------------------------------------------------------------------------------------------------- |
+| output-file | `robots.txt`      | Where to write the resulting robots.txt file                                                                   |
+| input-file  | `base-robots.txt` | An existing robots.txt. Will be added to the top of the output file. Must not be the same as the `output-file` |
 
-If you are new, there's also a simpler introduction in the
-[Hello world JavaScript action repository](https://github.com/actions/hello-world-javascript-action).
-
-## Create Your Own Action
-
-To create your own action, you can use this repository as a template! Just
-follow the below instructions:
-
-1. Click the **Use this template** button at the top of the repository
-1. Select **Create a new repository**
-1. Select an owner and name for your new repository
-1. Click **Create repository**
-1. Clone your new repository
-
-> [!IMPORTANT]
->
-> Make sure to remove or update the [`CODEOWNERS`](./CODEOWNERS) file! For
-> details on how to use this file, see
-> [About code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners).
+<!-- markdownlint-disable MD033 -->
+<details>
+<summary>Development instructions</summary>
+<!-- markdownlint-enable MD033 -->
 
 ## Initial Setup
 
@@ -261,3 +248,5 @@ following steps:
    commits, tags and branches to the remote repository. From here, you will need
    to create a new release in GitHub so users can easily reference the new tags
    in their workflows.
+
+</details>
