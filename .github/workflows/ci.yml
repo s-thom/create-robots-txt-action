@@ -56,9 +56,8 @@ jobs:
       - name: Test Local Action
         id: test-action
         uses: ./
-        with:
-          milliseconds: 2000
+        with: {}
 
-      - name: Print Output
+      - name: Print robots.txt
         id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+        run: cat robots.txt

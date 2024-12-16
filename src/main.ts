@@ -8,7 +8,7 @@ import { getFileContent } from "./file";
  */
 export async function run(): Promise<void> {
   try {
-    const outputFile = core.getInput("output-file", { required: true });
+    const outputFile = core.getInput("output-file") || "robots.txt";
     if (!outputFile) {
       core.setFailed("No `output-file` set");
       return;
