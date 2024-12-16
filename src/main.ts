@@ -1,5 +1,6 @@
 import * as core from "@actions/core";
-import { wait } from "./wait";
+import { writeFile } from "node:fs/promises";
+import { getFileContent } from "./file";
 
 /**
  * The main function for the action.
@@ -7,20 +8,27 @@ import { wait } from "./wait";
  */
 export async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput("milliseconds");
+    const outputFile = core.getInput("output-file", { required: true });
+    if (!outputFile) {
+      core.setFailed("No `output-file` set");
+      return;
+    }
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`);
+    const promises: Promise<string>[] = [];
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString());
-    await wait(parseInt(ms, 10));
-    core.debug(new Date().toTimeString());
+    const inputFile = core.getInput("input-file");
+    if (inputFile) {
+      promises.push(getFileContent());
+    }
 
-    // Set outputs for other workflow steps to use
-    core.setOutput("time", new Date().toTimeString());
+    const chunks = await Promise.all(promises);
+    const data = chunks.join("\n\n");
+    await writeFile(outputFile, data, { encoding: "utf8" });
   } catch (error) {
     // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message);
+    if (error instanceof Error) {
+      core.setFailed(error.message);
+      return;
+    }
   }
 }

@@ -25635,6 +25635,57 @@ module.exports = {
 
 /***/ }),
 
+/***/ 3765:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getFileContent = getFileContent;
+const core = __importStar(__nccwpck_require__(7484));
+const promises_1 = __nccwpck_require__(1455);
+async function getFileContent() {
+    const inputFile = core.getInput("input-file");
+    const content = await (0, promises_1.readFile)(inputFile, { encoding: "utf8" });
+    return content;
+}
+
+
+/***/ }),
+
 /***/ 1730:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -25676,52 +25727,35 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core = __importStar(__nccwpck_require__(7484));
-const wait_1 = __nccwpck_require__(910);
+const promises_1 = __nccwpck_require__(1455);
+const file_1 = __nccwpck_require__(3765);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
     try {
-        const ms = core.getInput("milliseconds");
-        // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-        core.debug(`Waiting ${ms} milliseconds ...`);
-        // Log the current timestamp, wait, then log the new timestamp
-        core.debug(new Date().toTimeString());
-        await (0, wait_1.wait)(parseInt(ms, 10));
-        core.debug(new Date().toTimeString());
-        // Set outputs for other workflow steps to use
-        core.setOutput("time", new Date().toTimeString());
+        const outputFile = core.getInput("output-file", { required: true });
+        if (!outputFile) {
+            core.setFailed("No `output-file` set");
+            return;
+        }
+        const promises = [];
+        const inputFile = core.getInput("input-file");
+        if (inputFile) {
+            promises.push((0, file_1.getFileContent)());
+        }
+        const chunks = await Promise.all(promises);
+        const data = chunks.join("\n\n");
+        await (0, promises_1.writeFile)(outputFile, data, { encoding: "utf8" });
     }
     catch (error) {
         // Fail the workflow run if an error occurs
-        if (error instanceof Error)
+        if (error instanceof Error) {
             core.setFailed(error.message);
-    }
-}
-
-
-/***/ }),
-
-/***/ 910:
-/***/ ((__unused_webpack_module, exports) => {
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.wait = wait;
-/**
- * Wait for a number of milliseconds.
- * @param milliseconds The number of milliseconds to wait.
- * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
- */
-async function wait(milliseconds) {
-    return new Promise((resolve) => {
-        if (isNaN(milliseconds)) {
-            throw new Error("milliseconds not a number");
+            return;
         }
-        setTimeout(() => resolve("done!"), milliseconds);
-    });
+    }
 }
 
 
@@ -25836,6 +25870,14 @@ module.exports = require("net");
 
 "use strict";
 module.exports = require("node:events");
+
+/***/ }),
+
+/***/ 1455:
+/***/ ((module) => {
+
+"use strict";
+module.exports = require("node:fs/promises");
 
 /***/ }),
 
