@@ -16,7 +16,7 @@ inputs:
     description: "Multiline string. Names of bots that should not be included in the blocklist"
   cloudflare-api-token:
     description: "An API token for Cloudflare. Enables Cloudflare's bot categories as a source for bots"
-  cloudflare-bot-categories:
+  cloudflare-categories:
     description: "Bot categories to add to the blocklist. Required if `cloudflare-api-token` is set"
   dark-visitors-api-token:
     description: "An API token for Dark Visitors. Enables Dark Visitors' user agent categories as a source for bots"

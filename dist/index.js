@@ -38957,7 +38957,7 @@ const core_1 = __nccwpck_require__(37484);
 const cloudflare_1 = __importStar(__nccwpck_require__(7850));
 async function getCloudflareBots() {
     const cloudflareToken = (0, core_1.getInput)("cloudflare-api-token", { required: true });
-    const botCategories = new Set((0, core_1.getMultilineInput)("cloudflare-bot-categories", {
+    const botCategories = new Set((0, core_1.getMultilineInput)("cloudflare-categories", {
         required: true,
     }));
     const client = new cloudflare_1.default({ apiToken: cloudflareToken });
@@ -39009,12 +39009,13 @@ async function getDarkVisitorsUserAgents() {
             disallow: "/",
         }),
     })
-        .then((response) => response.text())
+        .then(async (response) => response.text())
         .catch((err) => {
-        (0, core_1.error)(err.message);
+        if (err instanceof Error) {
+            (0, core_1.error)(err);
+        }
         throw new Error("Error requesting robots.txt from Dark Visitors");
     });
-    console.log(baseRobotsTxt);
     const userAgents = Array.from(baseRobotsTxt.matchAll(/^User-agent: (.*)$/gm)).map((match) => match[1]);
     return new Set(userAgents);
 }

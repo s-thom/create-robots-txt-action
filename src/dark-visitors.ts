@@ -1,5 +1,4 @@
-import { getInput, getMultilineInput, error } from "@actions/core";
-import Cloudflare, { APIError } from "cloudflare";
+import { error, getInput, getMultilineInput } from "@actions/core";
 
 export async function getDarkVisitorsUserAgents(): Promise<Set<string>> {
   const darkVisitorsToken = getInput("dark-visitors-api-token", {
@@ -22,13 +21,14 @@ export async function getDarkVisitorsUserAgents(): Promise<Set<string>> {
       }),
     },
   )
-    .then((response) => response.text())
+    .then(async (response) => response.text())
     .catch((err) => {
-      error(err.message);
+      if (err instanceof Error) {
+        error(err);
+      }
+
       throw new Error("Error requesting robots.txt from Dark Visitors");
     });
-
-  console.log(baseRobotsTxt);
 
   const userAgents = Array.from(
     baseRobotsTxt.matchAll(/^User-agent: (.*)$/gm),

@@ -4,7 +4,7 @@ import Cloudflare, { APIError } from "cloudflare";
 export async function getCloudflareBots(): Promise<Set<string>> {
   const cloudflareToken = getInput("cloudflare-api-token", { required: true });
   const botCategories = new Set(
-    getMultilineInput("cloudflare-bot-categories", {
+    getMultilineInput("cloudflare-categories", {
       required: true,
     }),
   );
