@@ -1,6 +1,7 @@
-import * as core from "@actions/core";
+import { getInput, getMultilineInput, setFailed } from "@actions/core";
 import { writeFile } from "node:fs/promises";
 import { getFileContent } from "./file";
+import { getCloudflareBots } from "./cloudflare";
 
 /**
  * The main function for the action.
@@ -8,26 +9,59 @@ import { getFileContent } from "./file";
  */
 export async function run(): Promise<void> {
   try {
-    const outputFile = core.getInput("output-file") || "robots.txt";
+    const outputFile = getInput("output-file") || "robots.txt";
     if (!outputFile) {
-      core.setFailed("No `output-file` set");
+      setFailed("No `output-file` set");
       return;
     }
 
-    const promises: Promise<string>[] = [];
+    const promises: Promise<void>[] = [];
 
-    const inputFile = core.getInput("input-file");
+    let startChunk: string | undefined;
+    const inputFile = getInput("input-file");
     if (inputFile) {
-      promises.push(getFileContent());
+      promises.push(
+        getFileContent().then((content) => {
+          startChunk = content;
+        }),
+      );
     }
 
-    const chunks = await Promise.all(promises);
-    const data = chunks.join("\n\n");
+    const blockedBotNames = new Set<string>();
+
+    const cloudflareToken = getInput("cloudflare-api-token");
+    if (cloudflareToken) {
+      promises.push(
+        getCloudflareBots().then((bots) => {
+          for (const bot of bots) {
+            blockedBotNames.add(bot);
+          }
+        }),
+      );
+    }
+
+    await Promise.all(promises);
+
+    const excludedBotNames = getMultilineInput("exclude-bot-names");
+    for (const name of excludedBotNames) {
+      blockedBotNames.delete(name);
+    }
+
+    let blockedChunk: string | undefined;
+    if (blockedBotNames.size > 0) {
+      const blockLines = Array.from(blockedBotNames)
+        .sort()
+        .map((name) => `User-agent: ${name}`)
+        .join("\n");
+      blockedChunk = `${blockLines}\nDisallow: *`;
+    }
+
+    const data = [startChunk, blockedChunk].filter(Boolean).join("\n\n");
     await writeFile(outputFile, data, { encoding: "utf8" });
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) {
-      core.setFailed(error.message);
+      setFailed(error.message);
       return;
     }
   }
