@@ -2,6 +2,7 @@ import { getInput, getMultilineInput, setFailed } from "@actions/core";
 import { writeFile } from "node:fs/promises";
 import { getFileContent } from "./file";
 import { getCloudflareBots } from "./cloudflare";
+import { getDarkVisitorsUserAgents } from "./dark-visitors";
 
 /**
  * The main function for the action.
@@ -29,10 +30,19 @@ export async function run(): Promise<void> {
 
     const blockedBotNames = new Set<string>();
 
-    const cloudflareToken = getInput("cloudflare-api-token");
-    if (cloudflareToken) {
+    if (getInput("cloudflare-api-token")) {
       promises.push(
         getCloudflareBots().then((bots) => {
+          for (const bot of bots) {
+            blockedBotNames.add(bot);
+          }
+        }),
+      );
+    }
+
+    if (getInput("dark-visitors-api-token")) {
+      promises.push(
+        getDarkVisitorsUserAgents().then((bots) => {
           for (const bot of bots) {
             blockedBotNames.add(bot);
           }
@@ -56,7 +66,7 @@ export async function run(): Promise<void> {
       blockedChunk = `${blockLines}\nDisallow: *`;
     }
 
-    const data = [startChunk, blockedChunk].filter(Boolean).join("\n\n");
+    const data = [startChunk, blockedChunk].filter(Boolean).join("\n\n") + "\n";
     await writeFile(outputFile, data, { encoding: "utf8" });
   } catch (error) {
     // Fail the workflow run if an error occurs

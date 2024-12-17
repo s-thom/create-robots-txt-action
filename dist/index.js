@@ -38983,6 +38983,45 @@ async function getCloudflareBots() {
 
 /***/ }),
 
+/***/ 76891:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getDarkVisitorsUserAgents = getDarkVisitorsUserAgents;
+const core_1 = __nccwpck_require__(37484);
+async function getDarkVisitorsUserAgents() {
+    const darkVisitorsToken = (0, core_1.getInput)("dark-visitors-api-token", {
+        required: true,
+    });
+    const botCategories = (0, core_1.getMultilineInput)("dark-visitors-categories", {
+        required: true,
+    });
+    const baseRobotsTxt = await fetch("https://api.darkvisitors.com/robots-txts", {
+        method: "POST",
+        headers: new Headers({
+            Authorization: `Bearer ${darkVisitorsToken}`,
+            "Content-Type": "application/json",
+        }),
+        body: JSON.stringify({
+            agent_types: botCategories,
+            disallow: "/",
+        }),
+    })
+        .then((response) => response.text())
+        .catch((err) => {
+        (0, core_1.error)(err.message);
+        throw new Error("Error requesting robots.txt from Dark Visitors");
+    });
+    console.log(baseRobotsTxt);
+    const userAgents = Array.from(baseRobotsTxt.matchAll(/^User-agent: (.*)$/gm)).map((match) => match[1]);
+    return new Set(userAgents);
+}
+
+
+/***/ }),
+
 /***/ 53765:
 /***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
 
@@ -39012,6 +39051,7 @@ const core_1 = __nccwpck_require__(37484);
 const promises_1 = __nccwpck_require__(51455);
 const file_1 = __nccwpck_require__(53765);
 const cloudflare_1 = __nccwpck_require__(42316);
+const dark_visitors_1 = __nccwpck_require__(76891);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -39032,9 +39072,15 @@ async function run() {
             }));
         }
         const blockedBotNames = new Set();
-        const cloudflareToken = (0, core_1.getInput)("cloudflare-api-token");
-        if (cloudflareToken) {
+        if ((0, core_1.getInput)("cloudflare-api-token")) {
             promises.push((0, cloudflare_1.getCloudflareBots)().then((bots) => {
+                for (const bot of bots) {
+                    blockedBotNames.add(bot);
+                }
+            }));
+        }
+        if ((0, core_1.getInput)("dark-visitors-api-token")) {
+            promises.push((0, dark_visitors_1.getDarkVisitorsUserAgents)().then((bots) => {
                 for (const bot of bots) {
                     blockedBotNames.add(bot);
                 }
@@ -39053,7 +39099,7 @@ async function run() {
                 .join("\n");
             blockedChunk = `${blockLines}\nDisallow: *`;
         }
-        const data = [startChunk, blockedChunk].filter(Boolean).join("\n\n");
+        const data = [startChunk, blockedChunk].filter(Boolean).join("\n\n") + "\n";
         await (0, promises_1.writeFile)(outputFile, data, { encoding: "utf8" });
     }
     catch (error) {

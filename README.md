@@ -9,6 +9,8 @@ An action to create a [robots.txt](https://en.wikipedia.org/wiki/Robots.txt) fil
 | exclude-bot-names         |                   | Multiline string. Names of bots that should not be included in the blocklist                                   |
 | cloudflare-api-token      |                   | An API token for Cloudflare. Enables Cloudflare's bot categories as a source for bots                          |
 | cloudflare-bot-categories | `AI Crawler`      | Bot categories to add to the blocklist. Required if `cloudflare-api-token` is set                              |
+| dark-visitors-api-token   |                   | An API token for Dark Visitors. Enables Dark Visitors' user agent categories as a source for bots              |
+| dark-visitors-categories  | `AI Data Scraper` | User agent categories to add to the blocklist. Required if `dark-visitors-api-token` is set                    |
 
 <!-- markdownlint-disable MD033 -->
 <details>

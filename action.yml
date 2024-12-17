@@ -18,6 +18,10 @@ inputs:
     description: "An API token for Cloudflare. Enables Cloudflare's bot categories as a source for bots"
   cloudflare-bot-categories:
     description: "Bot categories to add to the blocklist. Required if `cloudflare-api-token` is set"
+  dark-visitors-api-token:
+    description: "An API token for Dark Visitors. Enables Dark Visitors' user agent categories as a source for bots"
+  dark-visitors-categories:
+    description: "User agent categories to add to the blocklist. Required if `dark-visitors-api-token` is set"
 
 outputs: {}
 
