@@ -13,6 +13,48 @@ An action to create a [robots.txt](https://en.wikipedia.org/wiki/Robots.txt) fil
 | dark-visitors-api-token  |                   | An API token for Dark Visitors. Enables Dark Visitors' user agent categories as a source for bots              |
 | dark-visitors-categories | `AI Data Scraper` | User agent categories to add to the blocklist. Required if `dark-visitors-api-token` is set                    |
 
+## Known bot categories for each provider
+
+### Cloudflare
+
+- Accessibility
+- Advertising & Marketing
+- Aggregator
+- AI Assistant
+- AI Crawler
+- AI Search
+- Archiver
+- Feed Fetcher
+- Monitoring & Analytics
+- Page Preview
+- Search Engine Crawler
+- Search Engine Optimization
+- Security
+- Social Media Marketing
+- Webhooks
+- Other
+
+### Dark Visitors
+
+- AI Assistants​
+- AI Data Scrapers​
+- AI Search Crawlers​
+
+> [!NOTE]
+>
+> While Dark Visitors also defines these other categories, they do not include bots from these categories in their API.
+>
+> - Archivers​
+> - Developer Helpers​
+> - Fetchers​
+> - Headless Browsers​
+> - Intelligence Gatherers​
+> - Scrapers​
+> - Search Engine Crawlers​
+> - SEO Crawlers​
+> - Uncategorized​
+> - Undocumented AI Agents
+
 <!-- markdownlint-disable MD033 -->
 <details>
 <summary>Development instructions</summary>
