@@ -62,7 +62,7 @@ export async function run(): Promise<void> {
 
     await Promise.all(promises);
 
-    const excludedBotNames = getMultilineInput("exclude-bot-names");
+    const excludedBotNames = getMultilineInput("allowed-bot-names");
     for (const name of excludedBotNames) {
       blockedBotNames.delete(name);
     }

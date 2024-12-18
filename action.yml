@@ -15,7 +15,7 @@ inputs:
   append-allow-rule:
     description: "Whether to add an allow for all unspecified user agents to the end of the file"
     default: "false"
-  exclude-bot-names:
+  allowed-bot-names:
     description: "Multiline string. Names of bots that should not be included in the blocklist"
   cloudflare-api-token:
     description: "An API token for Cloudflare. Enables Cloudflare's bot categories as a source for bots"

@@ -39091,7 +39091,7 @@ async function run() {
             }));
         }
         await Promise.all(promises);
-        const excludedBotNames = (0, core_1.getMultilineInput)("exclude-bot-names");
+        const excludedBotNames = (0, core_1.getMultilineInput)("allowed-bot-names");
         for (const name of excludedBotNames) {
             blockedBotNames.delete(name);
         }
