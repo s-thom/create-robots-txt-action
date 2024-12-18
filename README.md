@@ -71,7 +71,7 @@ jobs:
 
 To create an API token, go to [the API Tokens page](https://dash.cloudflare.com/profile/api-tokens) in your profile settings and create a new token. Use the "Read Cloudflare Radar data" template or create a custom one with the "Account > Radar > Read" permission. Create the token and add it as an actions secret in your GitHub repository.
 
-It is worth creating a new token for this workflow even if you already have one set up in your repository. It is good practice to give the least amount of privilege to any tokens given to 3rd party code, such as this action.
+It is worth creating a new token for this workflow even if you already have one set up in your repository. It is good practice to give the least amount of privilege to any tokens given to third-party code, such as this action.
 
 - Accessibility
 - Advertising & Marketing
