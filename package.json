@@ -1,7 +1,7 @@
 {
   "name": "create-robots-txt-action",
   "description": "An action to generate a robots.txt file",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "author": "",
   "private": true,
   "homepage": "https://github.com/s-thom/create-robots-txt-action",
