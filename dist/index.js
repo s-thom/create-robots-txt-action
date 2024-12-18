@@ -39066,11 +39066,14 @@ async function run() {
         }
         const promises = [];
         let startChunk;
-        const inputFile = (0, core_1.getInput)("input-file");
-        if (inputFile) {
+        if ((0, core_1.getInput)("input-file")) {
             promises.push((0, file_1.getFileContent)().then((content) => {
                 startChunk = content;
             }));
+        }
+        let allowChunk;
+        if ((0, core_1.getBooleanInput)("append-allow-rule")) {
+            allowChunk = "User-agent: *\nAllow: /";
         }
         const blockedBotNames = new Set();
         if ((0, core_1.getInput)("cloudflare-api-token")) {
@@ -39098,10 +39101,20 @@ async function run() {
                 .sort()
                 .map((name) => `User-agent: ${name}`)
                 .join("\n");
-            blockedChunk = `${blockLines}\nDisallow: *`;
+            blockedChunk = `${blockLines}\nDisallow: /`;
         }
-        const data = [startChunk, blockedChunk].filter(Boolean).join("\n\n") + "\n";
-        await (0, promises_1.writeFile)(outputFile, data, { encoding: "utf8" });
+        const data = [startChunk, blockedChunk, allowChunk]
+            .filter(Boolean)
+            .join("\n\n");
+        if (data.length > 0) {
+            const addTrailingNewline = data.at(-1) !== "\n";
+            await (0, promises_1.writeFile)(outputFile, `${data}${addTrailingNewline ? "\n" : ""}`, {
+                encoding: "utf8",
+            });
+        }
+        else {
+            (0, core_1.warning)("No robots.txt content to write");
+        }
     }
     catch (error) {
         // Fail the workflow run if an error occurs

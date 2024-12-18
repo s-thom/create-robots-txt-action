@@ -1,4 +1,10 @@
-import { getInput, getMultilineInput, setFailed } from "@actions/core";
+import {
+  getBooleanInput,
+  getInput,
+  getMultilineInput,
+  setFailed,
+  warning,
+} from "@actions/core";
 import { writeFile } from "node:fs/promises";
 import { getFileContent } from "./file";
 import { getCloudflareBots } from "./cloudflare";
@@ -19,13 +25,17 @@ export async function run(): Promise<void> {
     const promises: Promise<void>[] = [];
 
     let startChunk: string | undefined;
-    const inputFile = getInput("input-file");
-    if (inputFile) {
+    if (getInput("input-file")) {
       promises.push(
         getFileContent().then((content) => {
           startChunk = content;
         }),
       );
+    }
+
+    let allowChunk: string | undefined;
+    if (getBooleanInput("append-allow-rule")) {
+      allowChunk = "User-agent: *\nAllow: /";
     }
 
     const blockedBotNames = new Set<string>();
@@ -63,11 +73,21 @@ export async function run(): Promise<void> {
         .sort()
         .map((name) => `User-agent: ${name}`)
         .join("\n");
-      blockedChunk = `${blockLines}\nDisallow: *`;
+      blockedChunk = `${blockLines}\nDisallow: /`;
     }
 
-    const data = [startChunk, blockedChunk].filter(Boolean).join("\n\n") + "\n";
-    await writeFile(outputFile, data, { encoding: "utf8" });
+    const data = [startChunk, blockedChunk, allowChunk]
+      .filter(Boolean)
+      .join("\n\n");
+    if (data.length > 0) {
+      const addTrailingNewline = data.at(-1) !== "\n";
+
+      await writeFile(outputFile, `${data}${addTrailingNewline ? "\n" : ""}`, {
+        encoding: "utf8",
+      });
+    } else {
+      warning("No robots.txt content to write");
+    }
   } catch (error) {
     // Fail the workflow run if an error occurs
     if (error instanceof Error) {
