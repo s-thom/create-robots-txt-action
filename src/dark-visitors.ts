@@ -1,4 +1,11 @@
-import { error, getInput, getMultilineInput } from "@actions/core";
+import {
+  endGroup,
+  error,
+  getInput,
+  getMultilineInput,
+  info,
+  startGroup,
+} from "@actions/core";
 
 export async function getDarkVisitorsUserAgents(): Promise<Set<string>> {
   const darkVisitorsToken = getInput("dark-visitors-api-token", {
@@ -30,9 +37,13 @@ export async function getDarkVisitorsUserAgents(): Promise<Set<string>> {
       throw new Error("Error requesting robots.txt from Dark Visitors");
     });
 
-  const userAgents = Array.from(
-    baseRobotsTxt.matchAll(/^User-agent: (.*)$/gm),
-  ).map((match) => match[1]);
+  const userAgents = Array.from(baseRobotsTxt.matchAll(/^User-agent: (.*)$/gm))
+    .map((match) => match[1])
+    .sort();
+
+  startGroup(`User agents from Dark Visitors (${userAgents.length})`);
+  info(userAgents.join("\n"));
+  endGroup();
 
   return new Set(userAgents);
 }

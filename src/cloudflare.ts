@@ -1,4 +1,11 @@
-import { getInput, getMultilineInput, error } from "@actions/core";
+import {
+  endGroup,
+  error,
+  getInput,
+  getMultilineInput,
+  info,
+  startGroup,
+} from "@actions/core";
 import Cloudflare, { APIError } from "cloudflare";
 
 export async function getCloudflareBots(): Promise<Set<string>> {
@@ -27,7 +34,12 @@ export async function getCloudflareBots(): Promise<Set<string>> {
 
   const names = response.top_0
     .filter((bot) => botCategories.has(bot.botCategory))
-    .map((bot) => bot.botName);
+    .map((bot) => bot.botName)
+    .sort();
+
+  startGroup(`User agents from Cloudflare (${names.length})`);
+  info(names.join("\n"));
+  endGroup();
 
   return new Set(names);
 }

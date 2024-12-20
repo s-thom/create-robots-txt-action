@@ -6,6 +6,10 @@ MD004:
 # Disabled because of tables.
 MD013: false
 
+# Multiple heading with same content
+# Disabled because of CHANGELOG format
+MD024: false
+
 # Ordered list item prefix
 MD029:
   style: one
