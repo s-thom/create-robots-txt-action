@@ -15,6 +15,10 @@ An action to create a [robots.txt](https://en.wikipedia.org/wiki/Robots.txt) fil
 
 ## Example workflow.yml
 
+> [!NOTE]
+>
+> You will need to enable the "Allow GitHub Actions to create and approve pull requests" option in your repository's `Settings > Actions > General`
+
 ```yml
 name: Update robots.txt
 
