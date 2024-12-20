@@ -6,9 +6,10 @@ import {
   warning,
 } from "@actions/core";
 import { writeFile } from "node:fs/promises";
-import { getFileContent } from "./file";
 import { getCloudflareBots } from "./cloudflare";
 import { getDarkVisitorsUserAgents } from "./dark-visitors";
+import { getFileContent } from "./file";
+import { getManualUserAgents } from "./manual";
 
 /**
  * The main function for the action.
@@ -53,6 +54,16 @@ export async function run(): Promise<void> {
     if (getInput("dark-visitors-api-token")) {
       promises.push(
         getDarkVisitorsUserAgents().then((bots) => {
+          for (const bot of bots) {
+            blockedBotNames.add(bot);
+          }
+        }),
+      );
+    }
+
+    if (getInput("blocked-bot-names")) {
+      promises.push(
+        getManualUserAgents().then((bots) => {
           for (const bot of bots) {
             blockedBotNames.add(bot);
           }

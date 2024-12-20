@@ -38976,7 +38976,11 @@ async function getCloudflareBots() {
     });
     const names = response.top_0
         .filter((bot) => botCategories.has(bot.botCategory))
-        .map((bot) => bot.botName);
+        .map((bot) => bot.botName)
+        .sort();
+    (0, core_1.startGroup)(`User agents from Cloudflare (${names.length})`);
+    (0, core_1.info)(names.join("\n"));
+    (0, core_1.endGroup)();
     return new Set(names);
 }
 
@@ -39016,7 +39020,12 @@ async function getDarkVisitorsUserAgents() {
         }
         throw new Error("Error requesting robots.txt from Dark Visitors");
     });
-    const userAgents = Array.from(baseRobotsTxt.matchAll(/^User-agent: (.*)$/gm)).map((match) => match[1]);
+    const userAgents = Array.from(baseRobotsTxt.matchAll(/^User-agent: (.*)$/gm))
+        .map((match) => match[1])
+        .sort();
+    (0, core_1.startGroup)(`User agents from Dark Visitors (${userAgents.length})`);
+    (0, core_1.info)(userAgents.join("\n"));
+    (0, core_1.endGroup)();
     return new Set(userAgents);
 }
 
@@ -39050,9 +39059,10 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.run = run;
 const core_1 = __nccwpck_require__(37484);
 const promises_1 = __nccwpck_require__(51455);
-const file_1 = __nccwpck_require__(53765);
 const cloudflare_1 = __nccwpck_require__(42316);
 const dark_visitors_1 = __nccwpck_require__(76891);
+const file_1 = __nccwpck_require__(53765);
+const manual_1 = __nccwpck_require__(40613);
 /**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
@@ -39085,6 +39095,13 @@ async function run() {
         }
         if ((0, core_1.getInput)("dark-visitors-api-token")) {
             promises.push((0, dark_visitors_1.getDarkVisitorsUserAgents)().then((bots) => {
+                for (const bot of bots) {
+                    blockedBotNames.add(bot);
+                }
+            }));
+        }
+        if ((0, core_1.getInput)("blocked-bot-names")) {
+            promises.push((0, manual_1.getManualUserAgents)().then((bots) => {
                 for (const bot of bots) {
                     blockedBotNames.add(bot);
                 }
@@ -39123,6 +39140,25 @@ async function run() {
             return;
         }
     }
+}
+
+
+/***/ }),
+
+/***/ 40613:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.getManualUserAgents = getManualUserAgents;
+const core_1 = __nccwpck_require__(37484);
+async function getManualUserAgents() {
+    const names = (0, core_1.getMultilineInput)("blocked-bot-names", { required: true });
+    (0, core_1.startGroup)(`User agents from inputs (${names.length})`);
+    (0, core_1.info)(names.join("\n"));
+    (0, core_1.endGroup)();
+    return new Set(names);
 }
 
 
