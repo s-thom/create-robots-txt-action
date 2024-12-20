@@ -62,13 +62,9 @@ export async function run(): Promise<void> {
     }
 
     if (getInput("blocked-bot-names")) {
-      promises.push(
-        getManualUserAgents().then((bots) => {
-          for (const bot of bots) {
-            blockedBotNames.add(bot);
-          }
-        }),
-      );
+      for (const bot of getManualUserAgents()) {
+        blockedBotNames.add(bot);
+      }
     }
 
     await Promise.all(promises);

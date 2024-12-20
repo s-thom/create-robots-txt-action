@@ -39101,11 +39101,9 @@ async function run() {
             }));
         }
         if ((0, core_1.getInput)("blocked-bot-names")) {
-            promises.push((0, manual_1.getManualUserAgents)().then((bots) => {
-                for (const bot of bots) {
-                    blockedBotNames.add(bot);
-                }
-            }));
+            for (const bot of (0, manual_1.getManualUserAgents)()) {
+                blockedBotNames.add(bot);
+            }
         }
         await Promise.all(promises);
         const excludedBotNames = (0, core_1.getMultilineInput)("allowed-bot-names");
@@ -39153,7 +39151,7 @@ async function run() {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getManualUserAgents = getManualUserAgents;
 const core_1 = __nccwpck_require__(37484);
-async function getManualUserAgents() {
+function getManualUserAgents() {
     const names = (0, core_1.getMultilineInput)("blocked-bot-names", { required: true });
     (0, core_1.startGroup)(`User agents from inputs (${names.length})`);
     (0, core_1.info)(names.join("\n"));
