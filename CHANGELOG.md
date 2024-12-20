@@ -16,6 +16,8 @@ The versioning scheme is listed in the README.
 
 ## Unreleased - DATE
 
+## v1.1.0 - 2024-12-20
+
 ### Added
 
 - Input `blocked-bot-names` to manually add user agents to the blocklist.
