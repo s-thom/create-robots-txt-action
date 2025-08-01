@@ -68,7 +68,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "cloudflare": "^4.2.0"
+    "cloudflare": "^4.5.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.28.0",
