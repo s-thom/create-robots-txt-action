@@ -16,6 +16,13 @@ The versioning scheme is listed in the README.
 
 ## Unreleased - DATE
 
+## v2.0.0 - 2026-06-02
+
+### Updated
+
+- This action now requires Node 24
+- Updated dependencies
+
 ## v1.1.1 - 2025-04-22
 
 ### Updated

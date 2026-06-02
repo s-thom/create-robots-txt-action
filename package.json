@@ -25,13 +25,13 @@
   },
   "scripts": {
     "bundle": "npm run format:write && npm run package",
-    "ci-test": "npx jest",
+    "ci-test": "npx vitest",
     "format:write": "npx prettier --write .",
     "format:check": "npx prettier --check .",
     "lint": "npx eslint .",
     "local-action": "npx local-action . src/main.ts .env",
     "package": "esbuild src/index.ts --bundle --outfile=dist/index.js --platform=node",
-    "test": "npx jest",
+    "test": "npx vitest",
     "all": "npm run format:write && npm run lint && npm run test && npm run package"
   },
   "license": "MIT",
