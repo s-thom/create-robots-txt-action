@@ -5,6 +5,15 @@ on:
     # First day of the month.
     - cron: "0 6 1 * *"
   workflow_dispatch:
+    inputs:
+      node-major-version:
+        description: >-
+          Major Node.js version to update to (e.g. 24). If not set, uses the
+          latest LTS version. GitHub Actions runners only support specific
+          major versions for `using: nodeNN`, so pin this when the latest LTS
+          isn't supported yet.
+        required: false
+        type: string
 
 jobs:
   update-node:
@@ -24,17 +33,29 @@ jobs:
 
       - name: Update schema
         id: node-version
+        env:
+          MAJOR_FILTER: ${{ inputs.node-major-version }}
         run: |
-          latest=$(curl -s https://nodejs.org/dist/index.json | jq -r 'map(select(.lts))[0].version' | sed 's/v//')
+          previous_major=$(sed -E 's/^v?([0-9]+).*/\1/' .node-version)
+          if [ -z "$MAJOR_FILTER" ]; then
+            MAJOR_FILTER="$previous_major"
+          fi
+
+          latest=$(curl -s https://nodejs.org/dist/index.json | jq -r --arg major "$MAJOR_FILTER" 'map(select(.lts and ((.version | ltrimstr("v") | split(".")[0]) == $major)))[0].version' | sed 's/v//')
           major=$(echo "$latest" | cut -d. -f1)
 
           echo "latest=$latest" >> $GITHUB_OUTPUT
           echo "major=$major" >> $GITHUB_OUTPUT
+          echo "previous-major=$previous_major" >> $GITHUB_OUTPUT
 
       - name: Update .node-version
         env:
           LATEST: ${{ steps.node-version.outputs.latest }}
         run: echo "v${LATEST}" > .node-version
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
 
       - name: Update @types/node package
         if: hashFiles('tsconfig.json') != ''
@@ -43,6 +64,72 @@ jobs:
         # zizmor: ignore[adhoc-packages] This is intentional
         run: npm install --save-dev @types/node@${MAJOR}
 
+      - name: Update action.yml runtime version
+        env:
+          MAJOR: ${{ steps.node-version.outputs.major }}
+        run: |
+          sed -i -E "s/using: node[0-9]+/using: node${MAJOR}/" action.yml
+
+      - name: Bump self-referenced action major version in README
+        # A Node major version bump is a breaking change for consumers (GitHub
+        # Actions runners only support specific `using: nodeNN` values), so it
+        # forces a major version bump of this action too. Reflect that here by
+        # bumping the `@vN` self-reference in the README, so the PR makes clear
+        # that the next release from this branch must be a major version.
+        id: readme-bump
+        if: steps.node-version.outputs.major != steps.node-version.outputs.previous-major
+        env:
+          REPO: ${{ github.repository }}
+          PREVIOUS_MAJOR: ${{ steps.node-version.outputs.previous-major }}
+          MAJOR: ${{ steps.node-version.outputs.major }}
+        run: |
+          current=$(grep -ohE "${REPO}@v[0-9]+" README.md | sed -E 's/.*@v//' | sort -un | tail -1)
+          if [ -z "$current" ]; then
+            echo "No self-referenced action version found in README, skipping."
+            exit 0
+          fi
+          next=$((current + 1))
+          echo "Bumping self-referenced action version from v$current to v$next (Node major version changed)"
+          sed -i -E "s#(${REPO}@v)${current}#\1${next}#g" README.md
+
+          {
+            echo "note<<EOF"
+            echo "> [!IMPORTANT]"
+            echo "> This bumps the Node major version from ${PREVIOUS_MAJOR} to ${MAJOR}, which is a breaking change for consumers (GitHub Actions runners only support specific \`using: nodeNN\` values). The README self-reference has been bumped from \`@v${current}\` to \`@v${next}\` accordingly — the next release from this branch must use a major version bump (\`v${next}.0.0\`)."
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Add changelog entry for Node major bump
+        if: steps.node-version.outputs.major != steps.node-version.outputs.previous-major
+        env:
+          MAJOR: ${{ steps.node-version.outputs.major }}
+        run: |
+          node - <<'JS'
+          const fs = require("fs");
+
+          const entry = `- Updated Node to v${process.env.MAJOR}`;
+          const path = "CHANGELOG.md";
+          const text = fs.readFileSync(path, "utf8");
+
+          const start = /^## Unreleased.*$/m.exec(text);
+          const rest = text.slice(start.index + start[0].length);
+          const nextHeading = /^## (?!Unreleased)/m.exec(rest);
+          const end = start.index + start[0].length + (nextHeading ? nextHeading.index : rest.length);
+
+          let block = text.slice(start.index + start[0].length, end);
+
+          if (/^### Updated$/m.test(block)) {
+            block = block.replace(/(^### Updated\n)(\n)?/m, (_, heading, blank) => `${heading}${blank || ""}${entry}\n`);
+          } else {
+            block = `\n\n### Updated\n\n${entry}\n${block.replace(/^\n+/, "")}`;
+          }
+
+          block = block.replace(/\n+$/, "") + "\n\n";
+          block = block.replace(/\n{3,}/g, "\n\n");
+
+          fs.writeFileSync(path, text.slice(0, start.index + start[0].length) + block + text.slice(end));
+          JS
+
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
@@ -50,6 +137,9 @@ jobs:
             .node-version
             package.json
             package-lock.json
+            action.yml
+            README.md
+            CHANGELOG.md
           commit-message: "[Auto] Update Node version"
           branch: auto-update/node
           delete-branch: true
@@ -58,3 +148,5 @@ jobs:
           title: "[Auto] Update script Node version"
           body: |
             Automatic update for the version of Node being used.
+
+            ${{ steps.readme-bump.outputs.note }}

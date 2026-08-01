@@ -16,6 +16,10 @@ The versioning scheme is listed in the README.
 
 ## Unreleased - DATE
 
+### Changed
+
+- Built action file is no longer committed to `main`, use a tagged release.
+
 ## v2.0.0 - 2026-06-02
 
 ### Updated

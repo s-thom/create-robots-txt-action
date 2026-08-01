@@ -1,0 +1,133 @@
+name: Release
+run-name: Release (${{ inputs.version }}${{ inputs.dry-run && ', dry run' || '' }})
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Semver version (no leading v, e.g. 1.2.3)"
+        required: true
+        type: string
+      dry-run:
+        description: "Skip actual release"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ inputs.version }}
+    permissions:
+      contents: write
+    steps:
+      - uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            github.com:443
+            api.github.com:443
+            uploads.github.com:443
+            registry.npmjs.org:443
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .node-version
+
+      - name: Build action
+        run: |
+          npm ci
+          npm run bundle
+
+      - name: Parse changelog
+        id: changelog
+        uses: release-flow/keep-a-changelog-action@74931dec7ecdbfc8e38ac9ae7e8dd84c08db2f32 # v3.0.0
+        with:
+          command: query
+          version: v${{ env.VERSION }}
+          changelog: CHANGELOG.md
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create orphaned release commit
+        id: release-commit
+        run: |
+          source_sha=$(git rev-parse HEAD)
+
+          # Stash the built dist/ directory from the working tree before switching branches
+          mkdir -p /tmp/dist
+          cp -r dist/. /tmp/dist
+
+          git checkout --orphan release-staging
+          git rm -rf .
+
+          # Restore the files consumers need to reference this action
+          git restore --source="$source_sha" -- README.md action.yml LICENSE
+
+          # Create .gitignore
+          echo "node_modules/" > .gitignore
+
+          source_note=$(printf '> [!NOTE]\n> This release was generated from [`%s`](https://github.com/%s/commit/%s).' "$source_sha" "$GITHUB_REPOSITORY" "$source_sha")
+
+          # Note which commit this orphaned release was built from (after the title)
+          awk -v note="$source_note" '
+            NR==1 { print; print ""; print note; next }
+            { print }
+          ' README.md > /tmp/README.md.new
+          mv /tmp/README.md.new README.md
+
+          mkdir -p dist
+          cp -r /tmp/dist/. dist
+
+          git add .
+          git commit -m "Release v$VERSION"
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "source-sha=$source_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Tag and push
+        if: ${{ !inputs.dry-run }}
+        env:
+          SHA: ${{ steps.release-commit.outputs.sha }}
+        run: |
+          full="v$VERSION"
+          minor="v$(echo "$VERSION" | cut -d. -f1-2)"
+          major="v$(echo "$VERSION" | cut -d. -f1)"
+          sha="${SHA}"
+
+          git tag -fa "$full"  "$sha" -m "Release $full"
+          git tag -fa "$minor" "$sha" -m "Release $minor"
+          git tag -fa "$major" "$sha" -m "Release $major"
+
+          git push origin "$full" "$minor" "$major" --force
+
+      - name: Create GitHub release
+        if: ${{ !inputs.dry-run }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NOTES: ${{ steps.changelog.outputs.release-notes }}
+          RELEASE_SHA: ${{ steps.release-commit.outputs.sha }}
+          SOURCE_SHA: ${{ steps.release-commit.outputs.source-sha }}
+        run: |
+          {
+            printf '> [!NOTE]\n> This release was generated from [`%s`](https://github.com/%s/commit/%s).\n\n' \
+              "$SOURCE_SHA" "$GITHUB_REPOSITORY" "$SOURCE_SHA"
+            echo "$RELEASE_NOTES"
+          } > /tmp/release-notes.md
+          gh release create "v$VERSION" \
+            --title "v$VERSION" \
+            --target "$RELEASE_SHA" \
+            --notes-file /tmp/release-notes.md \
+            --latest
+
+      - name: Dry run notice
+        if: ${{ inputs.dry-run }}
+        run: echo "::notice::Dry run - skipped tagging, pushing, and creating the GitHub release."
