@@ -25,10 +25,6 @@ inputs:
     description: "An API token for Known Agents. Enables Known Agents' user agent categories as a source for bots"
   known-agents-categories:
     description: "User agent categories to add to the blocklist. Required if `known-agents-api-token` is set"
-  dark-visitors-api-token:
-    description: "Alias for `known-agents-api-token`"
-  dark-visitors-categories:
-    description: "Alias for `known-agents-categories`"
 
 outputs: {}
 
