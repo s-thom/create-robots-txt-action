@@ -77,7 +77,7 @@ export async function run(): Promise<void> {
     let blockedChunk: string | undefined;
     if (blockedBotNames.size > 0) {
       const blockLines = Array.from(blockedBotNames)
-        .sort()
+        .sort((a, b) => a.localeCompare(b))
         .map((name) => `User-agent: ${name}`)
         .join("\n");
       blockedChunk = `${blockLines}\nDisallow: /`;
