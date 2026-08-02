@@ -92,6 +92,7 @@ jobs:
         if: ${{ !inputs.dry-run }}
         env:
           SHA: ${{ steps.release-commit.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           full="v$VERSION"
           minor="v$(echo "$VERSION" | cut -d. -f1-2)"
@@ -102,6 +103,7 @@ jobs:
           git tag -fa "$minor" "$sha" -m "Release $minor"
           git tag -fa "$major" "$sha" -m "Release $major"
 
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git push origin "$full" "$minor" "$major" --force
 
       - name: Create GitHub release
