@@ -1,0 +1,33 @@
+name: "Create Robots.txt"
+description: "An action to generate a robots.txt file"
+author: "Stuart Thomson"
+
+branding:
+  icon: "file-text"
+  color: "green"
+
+inputs:
+  output-file:
+    description: "Where to write the resulting robots.txt file"
+    default: "robots.txt"
+  input-file:
+    description: "An existing robots.txt. Will be added to the top of the output file. Must not be the same as the `output-file`"
+  append-allow-rule:
+    description: "Whether to add an allow for all unspecified user agents to the end of the file"
+    default: "false"
+  allowed-bot-names:
+    description: "Multiline string. Names of bots that should not be included in the blocklist"
+  cloudflare-api-token:
+    description: "An API token for Cloudflare. Enables Cloudflare's bot categories as a source for bots"
+  cloudflare-categories:
+    description: "Bot categories to add to the blocklist. Required if `cloudflare-api-token` is set"
+  known-agents-api-token:
+    description: "An API token for Known Agents. Enables Known Agents' user agent categories as a source for bots"
+  known-agents-categories:
+    description: "User agent categories to add to the blocklist. Required if `known-agents-api-token` is set"
+
+outputs: {}
+
+runs:
+  using: node24
+  main: dist/index.js
