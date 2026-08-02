@@ -16,6 +16,11 @@ The versioning scheme is listed in the README.
 
 ## Unreleased - DATE
 
+### Updated
+
+- Dark Visitors has been renamed to Known Agents
+  - Previous `dark-visitors-*` inputs need to be renamed to `known-agents-*`. The same values will still work.
+
 ### Changed
 
 - Built action file is no longer committed to `main`, use a tagged release.

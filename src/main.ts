@@ -7,7 +7,7 @@ import {
 } from "@actions/core";
 import { writeFile } from "node:fs/promises";
 import { getCloudflareBots } from "./cloudflare";
-import { getDarkVisitorsUserAgents } from "./dark-visitors";
+import { getKnownAgentsUserAgents } from "./known-agents";
 import { getFileContent } from "./file";
 import { getManualUserAgents } from "./manual";
 
@@ -51,9 +51,9 @@ export async function run(): Promise<void> {
       );
     }
 
-    if (getInput("dark-visitors-api-token")) {
+    if (getInput("known-agents-api-token")) {
       promises.push(
-        getDarkVisitorsUserAgents().then((bots) => {
+        getKnownAgentsUserAgents().then((bots) => {
           for (const bot of bots) {
             blockedBotNames.add(bot);
           }
