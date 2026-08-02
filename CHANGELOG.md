@@ -16,14 +16,12 @@ The versioning scheme is listed in the README.
 
 ## Unreleased - DATE
 
-### Updated
+### Changed
 
 - Dark Visitors has been renamed to Known Agents
   - Previous `dark-visitors-*` inputs need to be renamed to `known-agents-*`. The same values will still work.
-
-### Changed
-
-- Built action file is no longer committed to `main`, use a tagged release.
+- Cloudflare's bot categories have changed to named constants rather than human-friendly names.
+- Built action file is no longer committed to `main`.
 
 ## v2.0.0 - 2026-06-02
 

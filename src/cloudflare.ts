@@ -17,9 +17,8 @@ export async function getCloudflareBots(): Promise<Set<string>> {
   );
 
   const client = new Cloudflare({ apiToken: cloudflareToken });
-  const response = await client.radar.verifiedBots.top
-    .bots({
-      dateRange: ["30d"],
+  const response = await client.radar.bots
+    .list({
       // This limit may need to be increased at some point.
       // For some reason it's crashing with higher limits. This appears to be a hidden limit with no guidance.
       limit: 300,
@@ -32,9 +31,11 @@ export async function getCloudflareBots(): Promise<Set<string>> {
       throw new Error("Error requesting top bots from Cloudflare");
     });
 
-  const names = response.top_0
-    .filter((bot) => botCategories.has(bot.botCategory))
-    .map((bot) => bot.botName)
+  const names = response.bots
+    .filter((bot) => botCategories.has(bot.category))
+    .flatMap((bot) => bot.userAgentPatterns)
+    .filter((ua) => !!ua)
+    .map((ua) => ua.trim())
     .sort();
 
   startGroup(`User agents from Cloudflare (${names.length})`);

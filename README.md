@@ -78,22 +78,22 @@ To create an API token, go to [the API Tokens page](https://dash.cloudflare.com/
 
 It is worth creating a new token for this workflow even if you already have one set up in your repository. It is good practice to give the least amount of privilege to any tokens given to third-party code, such as this action.
 
-- Accessibility
-- Advertising & Marketing
-- Aggregator
-- AI Assistant
-- AI Crawler
-- AI Search
-- Archiver
-- Feed Fetcher
-- Monitoring & Analytics
-- Page Preview
-- Search Engine Crawler
-- Search Engine Optimization
-- Security
-- Social Media Marketing
-- Webhooks
-- Other
+- `SEARCH_ENGINE_CRAWLER`
+- `SEARCH_ENGINE_OPTIMIZATION`
+- `MONITORING_AND_ANALYTICS`
+- `ADVERTISING_AND_MARKETING`
+- `SOCIAL_MEDIA_MARKETING`
+- `PAGE_PREVIEW`
+- `ACADEMIC_RESEARCH`
+- `SECURITY`
+- `ACCESSIBILITY`
+- `WEBHOOKS`
+- `FEED_FETCHER`
+- `AI_CRAWLER`
+- `AGGREGATOR`
+- `AI_ASSISTANT`
+- `AI_SEARCH`
+- `ARCHIVER`
 
 ### Known Agents
 
