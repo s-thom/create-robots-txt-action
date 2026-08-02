@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Create robots.txt
-        uses: s-thom/create-robots-txt-action@v1
+        uses: s-thom/create-robots-txt-action@v3
         with:
           output-file: public/robots.txt
           append-allow-rule: true
