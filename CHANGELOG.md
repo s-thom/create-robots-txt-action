@@ -16,6 +16,8 @@ The versioning scheme is listed in the README.
 
 ## Unreleased - DATE
 
+## v3.0.0 - 2026-08-02
+
 ### Changed
 
 - Dark Visitors has been renamed to Known Agents
